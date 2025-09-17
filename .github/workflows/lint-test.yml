@@ -1,0 +1,72 @@
+# .github/workflows/lint-test.yml
+
+name: Lint and Format Check
+
+on:
+  push:
+    branches:
+      - main # Ou a branch principal do seu projeto
+  pull_request:
+    branches:
+      - main # Ou a branch principal do seu projeto
+
+jobs:
+  format-go:
+    name: Check Go Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21' # Use a versão do Go do seu projeto
+
+      - name: Run gofmt
+        run: |
+          cd api
+          # gofmt -l lista os arquivos que precisam de formatação. Se a lista estiver vazia, o comando sai com sucesso.
+          # O comando test -z irá falhar se a saída do gofmt não for vazia.
+          test -z $(gofmt -l .)
+
+  format-rust:
+    name: Check Rust Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: actions/setup-toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt
+
+      - name: Run cargo fmt
+        run: |
+          cd desktop/src-tauri
+          cargo fmt -- --check
+
+  format-frontend:
+    name: Check Frontend Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Use a versão do Node.js do seu projeto
+
+      - name: Install dependencies
+        run: |
+          cd desktop
+          npm install # ou yarn install, pnpm install
+
+      - name: Run Prettier
+        run: |
+          cd desktop
+          # É uma boa prática adicionar um script "format:check" ao seu package.json
+          npm run format:check
